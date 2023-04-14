@@ -7,7 +7,7 @@ const PluginInner = (propsFromParent: IDataEntryPluginProps) => {
         values,
         errors,
         warnings,
-        fieldsMetadata = {},
+        fieldsMetadata,
         setFieldValue,
         setContextFieldValue,
     } = propsFromParent;

@@ -17,9 +17,29 @@ type fieldsMetadata = {
     url: string | undefined;
 }
 
+type FieldValueOptions = {
+    valid?: boolean,
+    touched?: boolean,
+    error?: string,
+}
+
+type SetFieldValueProps = {
+    fieldId: string,
+    value: any,
+    options?: FieldValueOptions,
+}
+
+type SetContextFieldValueProps = {
+    fieldId: 'geometry' | 'occurredAt' | 'enrolledAt'
+    value: any,
+    options?: FieldValueOptions,
+}
+
 export type IDataEntryPluginProps = {
     values: Record<string, any>;
     errors: Record<string, string>;
     warnings: Record<string, string>;
     fieldsMetadata: Record<string, fieldsMetadata>;
+    setFieldValue: (values: SetFieldValueProps) => void;
+    setContextFieldValue: (values: SetContextFieldValueProps) => void;
 }
