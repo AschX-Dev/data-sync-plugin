@@ -1,0 +1,25 @@
+
+type fieldsMetadata = {
+    id: string;
+    name: string;
+    shortName: string;
+    formName: string;
+    disabled: boolean;
+    compulsory: boolean;
+    description: string;
+    type: string;
+    optionSet: any;
+    displayInForms: boolean;
+    displayInReports: boolean;
+    icon: any;
+    unique: any;
+    searchable: boolean | undefined;
+    url: string | undefined;
+}
+
+export type IDataEntryPluginProps = {
+    values: Record<string, any>;
+    errors: Record<string, string>;
+    warnings: Record<string, string>;
+    fieldsMetadata: Record<string, fieldsMetadata>;
+}
