@@ -8,6 +8,7 @@ const PluginInner = (propsFromParent: IDataEntryPluginProps) => {
         errors,
         warnings,
         fieldsMetadata,
+        formSubmitted,
         setFieldValue,
         setContextFieldValue,
     } = propsFromParent;
@@ -28,6 +29,9 @@ const PluginInner = (propsFromParent: IDataEntryPluginProps) => {
             <p>Warnings:</p>
             <pre>{JSON.stringify(warnings, null, 2)}</pre>
 
+            <p>Save attempted:</p>
+            <pre>{JSON.stringify(formSubmitted, null, 2)}</pre>
+
             <br />
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 3, width: 400 }}>
@@ -35,10 +39,10 @@ const PluginInner = (propsFromParent: IDataEntryPluginProps) => {
                     style={{ marginTop: '10px' }}
                     onClick={() => {
                         setFieldValue({
-                            fieldId: 'region',
-                            value: 'New name',
+                            fieldId: 'village',
+                            value: 'NVP only',
                             options: {
-                                error: 'Error message',
+                                error: 'This is an error',
                             }
                         })
                     }}

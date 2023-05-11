@@ -39,6 +39,7 @@ export type IDataEntryPluginProps = {
     values: Record<string, any>;
     errors: Record<string, string>;
     warnings: Record<string, string>;
+    formSubmitted: boolean;
     fieldsMetadata: Record<string, fieldsMetadata>;
     setFieldValue: (values: SetFieldValueProps) => void;
     setContextFieldValue: (values: SetContextFieldValueProps) => void;
