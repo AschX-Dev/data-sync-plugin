@@ -11,12 +11,12 @@
     "deploy": "d2-app-scripts deploy"
   },
   "devDependencies": {
-    "@dhis2/cli-app-scripts": "^10.4.0-alpha.3"
+    "@dhis2/cli-app-scripts": "^10.4.0-alpha.5"
   },
   "dependencies": {
-    "@dhis2/app-runtime": "^3.10.0-alpha.2"
+    "@dhis2/app-runtime": "^3.10.0-alpha.6"
   },
   "resolutions": {
-    "@dhis2/app-runtime": "^3.10.0-alpha.2"
+    "@dhis2/app-runtime": "^3.10.0-alpha.6"
   }
 }

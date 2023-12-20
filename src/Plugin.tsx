@@ -14,27 +14,36 @@ const PluginInner = (propsFromParent: IDataEntryPluginProps) => {
     } = propsFromParent;
 
     return (
-        <div style={{ backgroundColor: 'white', padding: '10px' }}>
-            <h3>Hello from a plugin 👋</h3>
+        <div style={{
+            backgroundColor: 'white',
+            width: '100vw',
+            display: 'flex',
+        }}>
+            <div
+                style={{
+                    padding: '10px',
+                    width: '100%',
+                }}
+            >
+                <h3>Hello from a plugin 👋</h3>
 
-            <p>Fields metadata:</p>
-            <pre>{JSON.stringify(fieldsMetadata, null, 2)}</pre>
+                <p>Fields metadata:</p>
+                <pre>{JSON.stringify(fieldsMetadata, null, 2)}</pre>
 
-            <p>Values:</p>
-            <pre>{JSON.stringify(values, null, 2)}</pre>
+                <p>Values:</p>
+                <pre>{JSON.stringify(values, null, 2)}</pre>
 
-            <p>Errors:</p>
-            <pre>{JSON.stringify(errors, null, 2)}</pre>
+                <p>Errors:</p>
+                <pre>{JSON.stringify(errors, null, 2)}</pre>
 
-            <p>Warnings:</p>
-            <pre>{JSON.stringify(warnings, null, 2)}</pre>
+                <p>Warnings:</p>
+                <pre>{JSON.stringify(warnings, null, 2)}</pre>
 
-            <p>Save attempted:</p>
-            <pre>{JSON.stringify(formSubmitted, null, 2)}</pre>
+                <p>Save attempted:</p>
+                <pre>{JSON.stringify(formSubmitted, null, 2)}</pre>
 
-            <br />
+                <br />
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 3, width: 400 }}>
                 <button
                     style={{ marginTop: '10px' }}
                     onClick={() => {
