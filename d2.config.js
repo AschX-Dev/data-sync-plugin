@@ -1,4 +1,5 @@
 const config = {
+    name: 'tracker-form-field-plugin',
     type: 'app',
 
     entryPoints: {

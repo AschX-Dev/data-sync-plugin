@@ -23,7 +23,7 @@ type FieldValueOptions = {
     error?: string,
 }
 
-type SetFieldValueProps = {
+export type SetFieldValueProps = {
     fieldId: string,
     value: any,
     options?: FieldValueOptions,
