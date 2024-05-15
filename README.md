@@ -1,45 +1,33 @@
-This project was bootstrapped with [DHIS2 Application Platform](https://github.com/dhis2/app-platform).
+## Civil Registry Mock Plugin
 
-## Available Scripts
+⚠️  Please do not use this in production. This is a mock plugin and should only be used for demonstration purposes.
 
-In the project directory, you can run:
+This plugin is a mock-up for how a Civil Registry lookup plugin could be implemented in DHIS2.
+The plugins allows you to call a mock API to search for a person in the Civil Registry and display the results in the Capture app.
+The values fetched from the API will set the values of the data elements.
 
-### `yarn start`
+### How to use
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+1. Download the latest version of the plugin from the [App hub](https://apps.dhis2.org).
+2. Upload the plugin to your DHIS2 instance.
+3. Download and install the Tracker configurator app from the [App hub](https://apps.dhis2.org/app/85d156b7-6e3f-43f0-be57-395449393f7d).
+4. Follow the instructions in the Tracker configurator app to configure the plugin.
+5. Open the Capture app and search for a person in the Civil Registry.
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+### Configuration
 
-### `yarn test`
+The plugin expects three tracked entity attributes to be configured in the field map. Please configure this in the Tracker configurator app.
 
-Launches the test runner and runs all available tests found in `/src`.<br />
+Example (Child Programme):
 
-See the section about [running tests](https://platform.dhis2.nu/#/scripts/test) for more information.
+| Attribute ID | Plugin alias | Type                            |
+|--------------|--------------|---------------------------------|
+| w75KJ2mc4zz  | firstName    | Text                            |
+| zDhUuAYrxNC  | lastName     | Text                            |
+| cejWyOfXge6  | gender       | Text / Option set (Male/female) |
 
-### `yarn build`
+### Important notes
 
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
+The plugin is a mock-up and does not actually call a real Civil Registry API. If you want to use this in production, you will need to implement the API yourself.
+This plugin will call the API directly, but if you want to use it in production, you should always consider using a proxy server to call the API.
 
-The build is minified and the filenames include the hashes.<br />
-A deployable `.zip` file can be found in `build/bundle`!
-
-See the section about [building](https://platform.dhis2.nu/#/scripts/build) for more information.
-
-### `yarn deploy`
-
-Deploys the built app in the `build` folder to a running DHIS2 instance.<br />
-This command will prompt you to enter a server URL as well as the username and password of a DHIS2 user with the App Management authority.<br/>
-You must run `yarn build` before running `yarn deploy`.<br />
-
-See the section about [deploying](https://platform.dhis2.nu/#/scripts/deploy) for more information.
-
-## Learn More
-
-You can learn more about the platform in the [DHIS2 Application Platform Documentation](https://platform.dhis2.nu/).
-
-You can learn more about the runtime in the [DHIS2 Application Runtime Documentation](https://runtime.dhis2.nu/).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
