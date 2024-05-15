@@ -1,11 +1,7 @@
 import React from 'react'
 import Plugin from "./Plugin";
-
-const query = {
-    me: {
-        resource: 'me',
-    },
-}
+import './tailwind.css';
+import './index.css';
 
 const MyApp = () => (
     <div>

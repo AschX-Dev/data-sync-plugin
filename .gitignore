@@ -2,4 +2,6 @@
 node_modules
 .d2
 src/locales
+tailwind.css
 build
+.idea
