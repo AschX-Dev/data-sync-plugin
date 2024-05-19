@@ -8,11 +8,10 @@ The values fetched from the API will set the values of the data elements.
 
 ### How to use
 
-1. Download the latest version of the plugin from the [App hub](https://apps.dhis2.org).
-2. Upload the plugin to your DHIS2 instance.
-3. Download and install the Tracker configurator app from the [App hub](https://apps.dhis2.org/app/85d156b7-6e3f-43f0-be57-395449393f7d).
-4. Follow the instructions in the Tracker configurator app to configure the plugin.
-5. Open the Capture app and search for a person in the Civil Registry.
+1. Download the latest version of the plugin from the _App management application_ on your DHIS2 instance.
+2. Download and install the Tracker configurator app from the _App management application_ or from the [App hub](https://apps.dhis2.org/app/85d156b7-6e3f-43f0-be57-395449393f7d).
+3. Follow the instructions in the Tracker configurator app to configure the plugin.
+4. Open the Capture app and search for a person in the Civil Registry.
 
 ### Configuration
 
