@@ -6,10 +6,11 @@ import { SetFieldValueProps } from "../../Plugin.types";
 
 type Props = {
     setFieldValue: (values: SetFieldValueProps) => void;
+    orgUnitId?: string;
 };
 
-export const ExternalSourceForm = ({ setFieldValue }: Props) => {
-    const { mutate, isLoading } = useExternalData({ setFieldValue });
+export const ExternalSourceForm = ({ setFieldValue, orgUnitId }: Props) => {
+    const { mutate, isLoading } = useExternalData({ setFieldValue, orgUnitId });
     const [patientId, setPatientId] = useState('');
     const [error, setError] = useState('');
 
@@ -17,7 +18,7 @@ export const ExternalSourceForm = ({ setFieldValue }: Props) => {
         event.preventDefault();
 
         if (!patientId.trim()) {
-            setError(i18n.t('Patient ID is required'));
+            setError(i18n.t('patient ID is required'));
             return;
         }
 
@@ -36,7 +37,7 @@ export const ExternalSourceForm = ({ setFieldValue }: Props) => {
                         htmlFor={'patientId'}
                         className={'label'}
                     >
-                        {i18n.t('Patient ID')}
+                        {i18n.t('patient ID')}
                     </label>
                 </div>
 

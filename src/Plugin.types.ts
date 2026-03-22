@@ -43,4 +43,7 @@ export type IDataEntryPluginProps = {
     fieldsMetadata: Record<string, fieldsMetadata>;
     setFieldValue: (values: SetFieldValueProps) => void;
     setContextFieldValue: (values: SetContextFieldValueProps) => void;
+    // Passed by DHIS2 Capture at runtime
+    programId?: string;
+    orgUnitId?: string;
 }

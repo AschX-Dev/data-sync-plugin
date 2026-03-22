@@ -1,11 +1,11 @@
 import './tailwind.css';
 import './index.css';
-import React, {useState} from "react";
-import {Button} from "@dhis2/ui";
-import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
-import {IDataEntryPluginProps} from "./Plugin.types";
-import {ExternalSourceForm} from "./Components/ExternalSourceForm";
-import {PluginDetails} from "./Components/PluginDetails";
+import React, { useState } from "react";
+import { Button } from "@dhis2/ui";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { IDataEntryPluginProps } from "./Plugin.types";
+import { ExternalSourceForm } from "./Components/ExternalSourceForm";
+import { PluginDetails } from "./Components/PluginDetails";
 
 const queryClient = new QueryClient();
 const PluginInner = (propsFromParent: IDataEntryPluginProps) => {
@@ -18,6 +18,7 @@ const PluginInner = (propsFromParent: IDataEntryPluginProps) => {
         warnings,
         formSubmitted,
         setContextFieldValue,
+        orgUnitId,
     } = propsFromParent;
 
     return (
@@ -43,6 +44,7 @@ const PluginInner = (propsFromParent: IDataEntryPluginProps) => {
                     {showExternalSourceForm ? (
                         <ExternalSourceForm
                             setFieldValue={setFieldValue}
+                            orgUnitId={orgUnitId}
                         />
                     ) : (
                         <PluginDetails

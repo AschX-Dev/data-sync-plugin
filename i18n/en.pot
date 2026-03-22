@@ -8,11 +8,11 @@ msgstr ""
 "POT-Creation-Date: 2025-11-15T20:14:31.797Z\n"
 "PO-Revision-Date: 2025-11-15T20:14:31.797Z\n"
 
-msgid "Patient ID is required"
-msgstr "Patient ID is required"
+msgid "patient ID is required"
+msgstr "patient ID is required"
 
-msgid "Patient ID"
-msgstr "Patient ID"
+msgid "patient ID"
+msgstr "patient ID"
 
 msgid "Enter patient ID"
 msgstr "Enter patient ID"
