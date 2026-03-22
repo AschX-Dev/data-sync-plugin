@@ -586,6 +586,10 @@ video {
   justify-content: flex-end;
 }
 
+.border {
+  border-width: 1px;
+}
+
 .bg-white {
   --tw-bg-opacity: 1;
   background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
@@ -603,4 +607,12 @@ video {
 
 .text-\[14px\] {
   font-size: 14px;
+}
+
+.uppercase {
+  text-transform: uppercase;
+}
+
+.filter {
+  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
 }
