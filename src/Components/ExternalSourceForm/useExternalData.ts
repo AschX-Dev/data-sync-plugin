@@ -9,10 +9,8 @@ import { SetFieldValueProps } from '../../Plugin.types';
 export type CountResults = {
     males: number;
     females: number;
-    age0_18: number;
-    age19_35: number;
-    age36_60: number;
-    age60plus: number;
+    ageYouth: number;    // age 15–35
+    ageNonYouth: number; // age > 35
     total: number;
 };
 
@@ -26,16 +24,13 @@ type Props = {
 // ─────────────────────────────────────────────────────────────────
 
 const PROGRAM_UID = 'YdLl8aLY91v'; // ADEY_Participants Tracking Tool
-const YOUTH_STATUS_STAGE_UID = 'yvHS9FuVRvA'; // Youth_Status_Change stage
+const YOUTH_STATUS_STAGE_UID = 'yvHS9FuVRvA'; // Y
+// outh_Status_Change stage
 const ENTERPRISE_DE = 'TlsDM3P677Z'; // Enterprise Unique ID (data element in event)
 const SEX_ATTR_UID = 'UuarYVu1ga2'; // Sex (TEI attribute)
 const DOB_ATTR_UID = 'CoBkeZU3pGi'; // Date of Birth (TEI attribute)
 
-// ─────────────────────────────────────────────────────────────────
-// Step 1 query — fetch all Youth_Status_Change events
-// No API-level filter (data elements can't be filtered via filter param).
-// Client-side filtering is done in onComplete.
-// ─────────────────────────────────────────────────────────────────
+
 
 const EVENTS_QUERY = {
     events: {
@@ -54,13 +49,19 @@ const EVENTS_QUERY = {
 // Helpers
 // ─────────────────────────────────────────────────────────────────
 
-function ageKey(
-    age: number
-): keyof Pick<CountResults, 'age0_18' | 'age19_35' | 'age36_60' | 'age60plus'> {
-    if (age <= 18) return 'age0_18';
-    if (age <= 35) return 'age19_35';
-    if (age <= 60) return 'age36_60';
-    return 'age60plus';
+/** Calculate age in whole years from an ISO-8601 DOB string. Returns null if invalid. */
+function calculateAge(dob: string): number | null {
+    if (!dob?.trim()) return null;
+    const birth = new Date(dob.trim());
+    if (isNaN(birth.getTime())) {
+        console.warn(`[EnterpriseCount] ⚠ Unparseable DOB: "${dob}"`);
+        return null;
+    }
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age -= 1;
+    return age;
 }
 
 function trySet(
@@ -74,9 +75,6 @@ function trySet(
     }
 }
 
-// ─────────────────────────────────────────────────────────────────
-// Aggregation — called after all TEI attributes are loaded
-// ─────────────────────────────────────────────────────────────────
 
 function aggregateCounts(
     teis: any[],
@@ -84,18 +82,16 @@ function aggregateCounts(
 ): CountResults {
     const counts: CountResults = {
         males: 0, females: 0,
-        age0_18: 0, age19_35: 0, age36_60: 0, age60plus: 0,
+        ageYouth: 0, ageNonYouth: 0,
         total: 0,
     };
-
-    const today = new Date();
 
     teis.forEach((tei: any, idx: number) => {
         const attrs: Array<{ attribute: string; value: string }> = tei.attributes ?? [];
 
         const sex = attrs.find(a => a.attribute === SEX_ATTR_UID)?.value ?? '';
         const dob = attrs.find(a => a.attribute === DOB_ATTR_UID)?.value ?? '';
-        const age = dob ? today.getFullYear() - new Date(dob).getFullYear() : null;
+        const age = calculateAge(dob);
 
         console.debug(
             `[EnterpriseCount] TEI[${idx}] ${tei.trackedEntity ?? tei.uid} | sex="${sex}" | dob="${dob}" | age=${age ?? 'N/A'}`
@@ -105,8 +101,10 @@ function aggregateCounts(
         else if (sex === 'Female') counts.females += 1;
         else console.warn(`[EnterpriseCount] TEI[${idx}] unrecognised sex: "${sex}"`);
 
-        if (age !== null && !isNaN(age)) {
-            counts[ageKey(age)] += 1;
+        if (age !== null) {
+            if (age >= 15 && age <= 35) counts.ageYouth += 1;
+            else if (age > 35) counts.ageNonYouth += 1;
+            // ages < 15 are not counted in either group
         } else {
             console.warn(`[EnterpriseCount] TEI[${idx}] skipping age — DOB missing/invalid: "${dob}"`);
         }
@@ -118,10 +116,8 @@ function aggregateCounts(
 
     trySet(setFieldValue, 'male', counts.males);
     trySet(setFieldValue, 'female', counts.females);
-    trySet(setFieldValue, 'age_0_18', counts.age0_18);
-    trySet(setFieldValue, 'age_19_35', counts.age19_35);
-    trySet(setFieldValue, 'age_36_60', counts.age36_60);
-    trySet(setFieldValue, 'age_60_plus', counts.age60plus);
+    trySet(setFieldValue, 'age_youth', counts.ageYouth);
+    trySet(setFieldValue, 'age_nonYouth', counts.ageNonYouth);
 
     return counts;
 }
@@ -192,7 +188,7 @@ export const useExternalData = ({ setFieldValue, orgUnitId: _orgUnitId }: Props)
 
                 if (filteredEvents.length === 0) {
                     console.warn('[EnterpriseCount] ⚠ No participants found.');
-                    setCounts({ males: 0, females: 0, age0_18: 0, age19_35: 0, age36_60: 0, age60plus: 0, total: 0 });
+                    setCounts({ males: 0, females: 0, ageYouth: 0, ageNonYouth: 0, total: 0 });
                     setIsLoading(false);
                     return;
                 }

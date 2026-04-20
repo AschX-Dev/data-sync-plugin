@@ -61,7 +61,7 @@ export const ExternalSourceForm = ({ setFieldValue, orgUnitId }: Props) => {
                 <div style={styles.inputRow}>
                     <div style={styles.inputGroup}>
                         <label style={styles.label}>
-                            {i18n.t('Enterprise Unique ID')}
+                            {i18n.t('Enterprise ID')}
                         </label>
                         <Input
                             name="enterpriseId"
@@ -136,10 +136,8 @@ export const ExternalSourceForm = ({ setFieldValue, orgUnitId }: Props) => {
                     {/* Age groups */}
                     <SectionHeading>{i18n.t('By Age Group')}</SectionHeading>
                     <div style={styles.tileRow}>
-                        <CountTile label={i18n.t('0 – 18')} value={counts!.age0_18} />
-                        <CountTile label={i18n.t('19 – 35')} value={counts!.age19_35} />
-                        <CountTile label={i18n.t('36 – 60')} value={counts!.age36_60} />
-                        <CountTile label={i18n.t('60+')} value={counts!.age60plus} />
+                        <CountTile label={i18n.t('Youth (15–35)')} value={counts!.ageYouth} />
+                        <CountTile label={i18n.t('Non-Youth (>35)')} value={counts!.ageNonYouth} />
                     </div>
                 </div>
             )}
@@ -158,6 +156,8 @@ const styles: Record<string, React.CSSProperties> = {
         flexDirection: 'column',
         gap: '16px',
         width: '100%',
+        maxWidth: '700px', 
+        margin: '0 auto',
         boxSizing: 'border-box',
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
     },
@@ -176,7 +176,7 @@ const styles: Record<string, React.CSSProperties> = {
         minWidth: '220px',
     },
     label: {
-        fontSize: '13px',
+        fontSize: '25px',
         fontWeight: 600,
         color: '#212934',
     },
@@ -205,12 +205,12 @@ const styles: Record<string, React.CSSProperties> = {
         gap: '10px',
     },
     cardTitle: {
-        fontSize: '14px',
+        fontSize: '20px',
         fontWeight: 700,
         color: '#212934',
     },
     totalBadge: {
-        fontSize: '12px',
+        fontSize: '16px',
         fontWeight: 500,
         color: '#fff',
         background: '#2c6fad',
@@ -218,7 +218,7 @@ const styles: Record<string, React.CSSProperties> = {
         padding: '2px 10px',
     },
     sectionLabel: {
-        fontSize: '11px',
+        fontSize: '15px',
         fontWeight: 600,
         textTransform: 'uppercase' as const,
         letterSpacing: '0.05em',
@@ -249,7 +249,7 @@ const styles: Record<string, React.CSSProperties> = {
         lineHeight: 1,
     },
     tileLabel: {
-        fontSize: '12px',
+        fontSize: '17px',
         color: '#6c7882',
         marginTop: '4px',
         textAlign: 'center' as const,

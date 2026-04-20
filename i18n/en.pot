@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2026-03-24T11:03:45.709Z\n"
-"PO-Revision-Date: 2026-03-24T11:03:45.709Z\n"
+"POT-Creation-Date: 2026-04-20T21:20:17.899Z\n"
+"PO-Revision-Date: 2026-04-20T21:20:17.900Z\n"
 
 msgid "Enterprise Unique ID is required"
 msgstr "Enterprise Unique ID is required"
@@ -14,8 +14,8 @@ msgstr "Enterprise Unique ID is required"
 msgid "Searching participants…"
 msgstr "Searching participants…"
 
-msgid "Enterprise Unique ID"
-msgstr "Enterprise Unique ID"
+msgid "Enterprise ID"
+msgstr "Enterprise ID"
 
 msgid "Enter enterprise unique ID"
 msgstr "Enter enterprise unique ID"
@@ -47,41 +47,11 @@ msgstr "Female"
 msgid "By Age Group"
 msgstr "By Age Group"
 
-msgid "0 – 18"
-msgstr "0 – 18"
+msgid "Youth (15–35)"
+msgstr "Youth (15–35)"
 
-msgid "19 – 35"
-msgstr "19 – 35"
-
-msgid "36 – 60"
-msgstr "36 – 60"
-
-msgid "60+"
-msgstr "60+"
-
-msgid "Hello from a plugin"
-msgstr "Hello from a plugin"
-
-msgid "Fields metadata"
-msgstr "Fields metadata"
-
-msgid "Values"
-msgstr "Values"
-
-msgid "Errors"
-msgstr "Errors"
-
-msgid "Warnings"
-msgstr "Warnings"
-
-msgid "Save attempted"
-msgstr "Save attempted"
-
-msgid "Set value with error"
-msgstr "Set value with error"
-
-msgid "Set coordinates"
-msgstr "Set coordinates"
+msgid "Non-Youth (>35)"
+msgstr "Non-Youth (>35)"
 
 msgctxt "Change events."
 msgid "No participants were found for enterprise ID \"{{id}}\" in the Youth_Status"
