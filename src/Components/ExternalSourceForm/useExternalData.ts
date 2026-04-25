@@ -124,7 +124,7 @@ function calculateCounts(
         const returnee = isYes(getAttr(attrs, RETURNEE_ATTR_UID));
 
         console.log(
-            `[EnterpriseCount] TEI ${tei.trackedEntity} | sex="${sex}" | age=${age ?? 'N/A'} | youth=${isYouth}`
+            `[EnterpriseCount] TEI ${tei.trackedEntity} | sex="${sex}" | age=${age ?? 'N/A'} | youth=${isYouth} | IDP=${idp} | PWD=${pwd} | refugee=${refugee} | returnee=${returnee}`
         );
 
         // Skip non-youth entirely
