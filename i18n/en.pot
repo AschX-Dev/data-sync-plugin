@@ -5,14 +5,11 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2026-04-20T21:20:17.899Z\n"
-"PO-Revision-Date: 2026-04-20T21:20:17.900Z\n"
+"POT-Creation-Date: 2026-04-25T20:30:05.874Z\n"
+"PO-Revision-Date: 2026-04-25T20:30:05.875Z\n"
 
 msgid "Enterprise Unique ID is required"
 msgstr "Enterprise Unique ID is required"
-
-msgid "Searching participants…"
-msgstr "Searching participants…"
 
 msgid "Enterprise ID"
 msgstr "Enterprise ID"
@@ -26,35 +23,65 @@ msgstr "Searching…"
 msgid "Search"
 msgstr "Search"
 
+msgid "Counting participants…"
+msgstr "Counting participants…"
+
 msgid "Query failed"
 msgstr "Query failed"
+
+msgid "Could not fetch participant data. Check the browser console for details."
+msgstr "Could not fetch participant data. Check the browser console for details."
 
 msgid "No participants found"
 msgstr "No participants found"
 
+msgid "No participants were found linked to enterprise ID \"{{id}}\"."
+msgstr "No participants were found linked to enterprise ID \"{{id}}\"."
+
 msgid "Participant Summary"
 msgstr "Participant Summary"
 
-msgid "By Sex"
-msgstr "By Sex"
+msgid "Youth (Age 15–35)"
+msgstr "Youth (Age 15–35)"
 
-msgid "Male"
-msgstr "Male"
+msgid "Total Members"
+msgstr "Total Members"
 
-msgid "Female"
-msgstr "Female"
+msgid "Female Youth"
+msgstr "Female Youth"
 
-msgid "By Age Group"
-msgstr "By Age Group"
+msgid "Male Youth"
+msgstr "Male Youth"
 
-msgid "Youth (15–35)"
-msgstr "Youth (15–35)"
+msgid "Internally Displaced Persons (IDP)"
+msgstr "Internally Displaced Persons (IDP)"
 
-msgid "Non-Youth (>35)"
-msgstr "Non-Youth (>35)"
+msgid "IDP Total"
+msgstr "IDP Total"
 
-msgctxt "Change events."
-msgid "No participants were found for enterprise ID \"{{id}}\" in the Youth_Status"
-msgstr ""
-"No participants were found for enterprise ID \"{{id}}\" in the "
-"Youth_Status_Change events."
+msgid "IDP Female"
+msgstr "IDP Female"
+
+msgid "IDP Male"
+msgstr "IDP Male"
+
+msgid "Persons with Disabilities (PWD)"
+msgstr "Persons with Disabilities (PWD)"
+
+msgid "PWD Total"
+msgstr "PWD Total"
+
+msgid "PWD Female"
+msgstr "PWD Female"
+
+msgid "PWD Male"
+msgstr "PWD Male"
+
+msgid "Other Vulnerable Groups"
+msgstr "Other Vulnerable Groups"
+
+msgid "Refugees"
+msgstr "Refugees"
+
+msgid "Returnees"
+msgstr "Returnees"

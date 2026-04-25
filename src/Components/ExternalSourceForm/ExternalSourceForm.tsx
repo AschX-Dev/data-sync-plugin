@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import i18n from '@dhis2/d2-i18n';
 import { Button, Input, CircularLoader, NoticeBox } from '@dhis2/ui';
-import { useExternalData } from './useExternalData';
+import { useExternalData, CountResults } from './useExternalData';
 import { SetFieldValueProps } from '../../Plugin.types';
 
 type Props = {
@@ -10,48 +10,88 @@ type Props = {
     fieldsMetadata?: Record<string, any>;
 };
 
-// ── Count tile ────────────────────────────────────────────────────
-const CountTile = ({ label, value }: { label: string; value: number }) => (
-    <div style={styles.tile}>
-        <span style={styles.tileValue}>{value}</span>
-        <span style={styles.tileLabel}>{label}</span>
-    </div>
-);
+// ─────────────────────────────────────────────────────────────────
+// Sub-components
+// ─────────────────────────────────────────────────────────────────
 
-// ── Section heading ───────────────────────────────────────────────
-const SectionHeading = ({ children }: { children: React.ReactNode }) => (
-    <div style={styles.sectionLabel}>{children}</div>
-);
+function CountTile({ label, value }: { label: string; value: number }) {
+    return (
+        <div style={styles.tile}>
+            <span style={styles.tileValue}>{value}</span>
+            <span style={styles.tileLabel}>{label}</span>
+        </div>
+    );
+}
+
+function SectionHeading({ children }: { children: React.ReactNode }) {
+    return <div style={styles.sectionLabel}>{children}</div>;
+}
+
+function ResultsCard({ counts }: { counts: CountResults | null }) {
+    // Hard guard — never render if counts is not ready
+    if (!counts) return null;
+
+    return (
+        <div style={styles.resultsCard}>
+            <div style={styles.cardHeader}>
+                <span style={styles.cardTitle}>{i18n.t('Participant Summary')}</span>
+                <span style={styles.totalBadge}>
+                    {i18n.t('Total: {{n}}', { n: counts.totalgroupmembers })}
+                </span>
+            </div>
+
+            <SectionHeading>{i18n.t('Youth (Age 15–35)')}</SectionHeading>
+            <div style={styles.tileRow}>
+                <CountTile label={i18n.t('Total Members')} value={counts.totalgroupmembers} />
+                <CountTile label={i18n.t('Female Youth')}  value={counts.femaleyouth} />
+                <CountTile label={i18n.t('Male Youth')}    value={counts.maleyouth} />
+            </div>
+
+            <SectionHeading>{i18n.t('Internally Displaced Persons (IDP)')}</SectionHeading>
+            <div style={styles.tileRow}>
+                <CountTile label={i18n.t('IDP Total')}  value={counts.idp} />
+                <CountTile label={i18n.t('IDP Female')} value={counts.idpfemale} />
+                <CountTile label={i18n.t('IDP Male')}   value={counts.idpmale} />
+            </div>
+
+            <SectionHeading>{i18n.t('Persons with Disabilities (PWD)')}</SectionHeading>
+            <div style={styles.tileRow}>
+                <CountTile label={i18n.t('PWD Total')}  value={counts.pwd} />
+                <CountTile label={i18n.t('PWD Female')} value={counts.pwdfemale} />
+                <CountTile label={i18n.t('PWD Male')}   value={counts.pwdmale} />
+            </div>
+
+            <SectionHeading>{i18n.t('Other Vulnerable Groups')}</SectionHeading>
+            <div style={styles.tileRow}>
+                <CountTile label={i18n.t('Refugees')}  value={counts.refugee} />
+                <CountTile label={i18n.t('Returnees')} value={counts.returnee} />
+            </div>
+        </div>
+    );
+}
 
 // ─────────────────────────────────────────────────────────────────
 // Main component
 // ─────────────────────────────────────────────────────────────────
 
-export const ExternalSourceForm = ({ setFieldValue, orgUnitId }: Props) => {
-    const { search, counts, isLoading, isError } = useExternalData({
+export function ExternalSourceForm({ setFieldValue, orgUnitId }: Props) {
+    const { search, counts, isLoading, error } = useExternalData({
         setFieldValue,
         orgUnitId,
     });
 
-    const [enterpriseId, setEnterpriseId] = useState('');
+    const [enterpriseId,    setEnterpriseId]    = useState('');
     const [validationError, setValidationError] = useState('');
 
-    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
         if (!enterpriseId.trim()) {
             setValidationError(i18n.t('Enterprise Unique ID is required'));
-            console.warn('[EnterpriseCount] Submitted with empty enterprise ID');
             return;
         }
         setValidationError('');
-        console.log(`[EnterpriseCount] Submitted — enterpriseId="${enterpriseId.trim()}"`);
         search({ enterpriseIdValue: enterpriseId.trim() });
-    };
-
-    const hasResults = counts !== null;
-    const noRecords = hasResults && counts.total === 0;
-
-    const loadingText = i18n.t('Searching participants…');
+    }
 
     return (
         <div style={styles.wrapper}>
@@ -77,9 +117,13 @@ export const ExternalSourceForm = ({ setFieldValue, orgUnitId }: Props) => {
                             <span style={styles.validationError}>{validationError}</span>
                         )}
                     </div>
-
                     <div style={styles.buttonWrapper}>
-                        <Button primary type="submit" loading={isLoading} disabled={isLoading}>
+                        <Button
+                            primary
+                            type="submit"
+                            loading={isLoading}
+                            disabled={isLoading}
+                        >
                             {isLoading ? i18n.t('Searching…') : i18n.t('Search')}
                         </Button>
                     </div>
@@ -90,60 +134,33 @@ export const ExternalSourceForm = ({ setFieldValue, orgUnitId }: Props) => {
             {isLoading && (
                 <div style={styles.centered}>
                     <CircularLoader small />
-                    <span style={styles.loadingText}>{loadingText}</span>
+                    <span style={styles.loadingText}>{i18n.t('Counting participants…')}</span>
                 </div>
             )}
 
-            {/* ── Error ── */}
-            {isError && !isLoading && (
+            {/* ── Fetch error ── */}
+            {error === 'fetchError' && !isLoading && (
                 <NoticeBox error title={i18n.t('Query failed')}>
-                    {i18n.t(
-                        'Could not fetch participant data. Check the browser console for details. ' +
-                        'Make sure the YOUTH_STATUS_STAGE_UID and ENTERPRISE_DE_UID constants are filled in.'
-                    )}
+                    {i18n.t('Could not fetch participant data. Check the browser console for details.')}
                 </NoticeBox>
             )}
 
-            {/* ── No results ── */}
-            {noRecords && !isLoading && (
+            {/* ── Not found ── */}
+            {error === 'notFoundError' && !isLoading && (
                 <NoticeBox warning title={i18n.t('No participants found')}>
                     {i18n.t(
-                        'No participants were found for enterprise ID "{{id}}" in the Youth_Status_Change events.',
+                        'No participants were found linked to enterprise ID "{{id}}".',
                         { id: enterpriseId }
                     )}
                 </NoticeBox>
             )}
 
-            {/* ── Results card ── */}
-            {hasResults && !noRecords && !isLoading && (
-                <div style={styles.resultsCard}>
+            {/* ── Results — ResultsCard itself guards against null ── */}
+            {!isLoading && <ResultsCard counts={counts} />}
 
-                    {/* Header */}
-                    <div style={styles.cardHeader}>
-                        <span style={styles.cardTitle}>{i18n.t('Participant Summary')}</span>
-                        <span style={styles.totalBadge}>
-                            {i18n.t('Total: {{n}}', { n: counts!.total })}
-                        </span>
-                    </div>
-
-                    {/* Gender */}
-                    <SectionHeading>{i18n.t('By Sex')}</SectionHeading>
-                    <div style={styles.tileRow}>
-                        <CountTile label={i18n.t('Male')} value={counts!.males} />
-                        <CountTile label={i18n.t('Female')} value={counts!.females} />
-                    </div>
-
-                    {/* Age groups */}
-                    <SectionHeading>{i18n.t('By Age Group')}</SectionHeading>
-                    <div style={styles.tileRow}>
-                        <CountTile label={i18n.t('Youth (15–35)')} value={counts!.ageYouth} />
-                        <CountTile label={i18n.t('Non-Youth (>35)')} value={counts!.ageNonYouth} />
-                    </div>
-                </div>
-            )}
         </div>
     );
-};
+}
 
 // ─────────────────────────────────────────────────────────────────
 // Styles
@@ -156,7 +173,7 @@ const styles: Record<string, React.CSSProperties> = {
         flexDirection: 'column',
         gap: '16px',
         width: '100%',
-        maxWidth: '700px', 
+        maxWidth: '700px',
         margin: '0 auto',
         boxSizing: 'border-box',
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
@@ -186,10 +203,8 @@ const styles: Record<string, React.CSSProperties> = {
         marginTop: '2px',
     },
     buttonWrapper: { flexShrink: 0, paddingBottom: '2px' },
-    centered: { display: 'flex', alignItems: 'center', gap: '8px' },
+    centered:    { display: 'flex', alignItems: 'center', gap: '8px' },
     loadingText: { fontSize: '13px', color: '#555' },
-
-    // Results card
     resultsCard: {
         background: '#f9fafb',
         border: '1px solid #d5dde5',
@@ -218,21 +233,21 @@ const styles: Record<string, React.CSSProperties> = {
         padding: '2px 10px',
     },
     sectionLabel: {
-        fontSize: '15px',
+        fontSize: '13px',
         fontWeight: 600,
-        textTransform: 'uppercase' as const,
+        textTransform: 'uppercase',
         letterSpacing: '0.05em',
         color: '#6c7882',
         marginTop: '4px',
     },
     tileRow: {
         display: 'flex',
-        flexWrap: 'wrap' as const,
+        flexWrap: 'wrap',
         gap: '10px',
     },
     tile: {
         display: 'flex',
-        flexDirection: 'column' as const,
+        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
         background: '#fff',
@@ -249,9 +264,9 @@ const styles: Record<string, React.CSSProperties> = {
         lineHeight: 1,
     },
     tileLabel: {
-        fontSize: '17px',
+        fontSize: '13px',
         color: '#6c7882',
         marginTop: '4px',
-        textAlign: 'center' as const,
+        textAlign: 'center',
     },
 };
