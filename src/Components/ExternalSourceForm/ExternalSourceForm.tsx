@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import i18n from '@dhis2/d2-i18n';
 import { Button, Input, CircularLoader, NoticeBox } from '@dhis2/ui';
-import { useExternalData, CountResults } from './useExternalData';
+import { useExternalData } from './useExternalData';
 import { SetFieldValueProps } from '../../Plugin.types';
 
 type Props = {
@@ -9,70 +9,6 @@ type Props = {
     orgUnitId?: string;
     fieldsMetadata?: Record<string, any>;
 };
-
-// ─────────────────────────────────────────────────────────────────
-// Sub-components
-// ─────────────────────────────────────────────────────────────────
-
-function CountTile({ label, value }: { label: string; value: number }) {
-    return (
-        <div style={styles.tile}>
-            <span style={styles.tileValue}>{value}</span>
-            <span style={styles.tileLabel}>{label}</span>
-        </div>
-    );
-}
-
-function SectionHeading({ children }: { children: React.ReactNode }) {
-    return <div style={styles.sectionLabel}>{children}</div>;
-}
-
-function ResultsCard({ counts }: { counts: CountResults | null }) {
-    // Hard guard — never render if counts is not ready
-    if (!counts) return null;
-
-    return (
-        <div style={styles.resultsCard}>
-            <div style={styles.cardHeader}>
-                <span style={styles.cardTitle}>{i18n.t('Participant Summary')}</span>
-                <span style={styles.totalBadge}>
-                    {i18n.t('Total: {{n}}', { n: counts.totalgroupmembers })}
-                </span>
-            </div>
-
-            <SectionHeading>{i18n.t('Youth (Age 15–35)')}</SectionHeading>
-            <div style={styles.tileRow}>
-                <CountTile label={i18n.t('Total Members')} value={counts.totalgroupmembers} />
-                <CountTile label={i18n.t('Female Youth')}  value={counts.femaleyouth} />
-                <CountTile label={i18n.t('Male Youth')}    value={counts.maleyouth} />
-            </div>
-
-            <SectionHeading>{i18n.t('Internally Displaced Persons (IDP)')}</SectionHeading>
-            <div style={styles.tileRow}>
-                <CountTile label={i18n.t('IDP Total')}  value={counts.idp} />
-                <CountTile label={i18n.t('IDP Female')} value={counts.idpfemale} />
-                <CountTile label={i18n.t('IDP Male')}   value={counts.idpmale} />
-            </div>
-
-            <SectionHeading>{i18n.t('Persons with Disabilities (PWD)')}</SectionHeading>
-            <div style={styles.tileRow}>
-                <CountTile label={i18n.t('PWD Total')}  value={counts.pwd} />
-                <CountTile label={i18n.t('PWD Female')} value={counts.pwdfemale} />
-                <CountTile label={i18n.t('PWD Male')}   value={counts.pwdmale} />
-            </div>
-
-            <SectionHeading>{i18n.t('Other Vulnerable Groups')}</SectionHeading>
-            <div style={styles.tileRow}>
-                <CountTile label={i18n.t('Refugees')}  value={counts.refugee} />
-                <CountTile label={i18n.t('Returnees')} value={counts.returnee} />
-            </div>
-        </div>
-    );
-}
-
-// ─────────────────────────────────────────────────────────────────
-// Main component
-// ─────────────────────────────────────────────────────────────────
 
 export function ExternalSourceForm({ setFieldValue, orgUnitId }: Props) {
     const { search, counts, isLoading, error } = useExternalData({
@@ -118,12 +54,7 @@ export function ExternalSourceForm({ setFieldValue, orgUnitId }: Props) {
                         )}
                     </div>
                     <div style={styles.buttonWrapper}>
-                        <Button
-                            primary
-                            type="submit"
-                            loading={isLoading}
-                            disabled={isLoading}
-                        >
+                        <Button primary type="submit" loading={isLoading} disabled={isLoading}>
                             {isLoading ? i18n.t('Searching…') : i18n.t('Search')}
                         </Button>
                     </div>
@@ -155,8 +86,15 @@ export function ExternalSourceForm({ setFieldValue, orgUnitId }: Props) {
                 </NoticeBox>
             )}
 
-            {/* ── Results — ResultsCard itself guards against null ── */}
-            {!isLoading && <ResultsCard counts={counts} />}
+            {/* ── Success ── */}
+            {counts !== null && !isLoading && error === null && (
+                <NoticeBox title={i18n.t('Fields updated')}>
+                    {i18n.t(
+                        '{{n}} youth participant(s) found for enterprise "{{id}}" — fields have been autofilled.',
+                        { n: counts.totalgroupmembers, id: enterpriseId }
+                    )}
+                </NoticeBox>
+            )}
 
         </div>
     );
@@ -171,10 +109,9 @@ const styles: Record<string, React.CSSProperties> = {
         padding: '16px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '16px',
+        gap: '12px',
         width: '100%',
-        maxWidth: '700px',
-        margin: '0 auto',
+        maxWidth: '600px',
         boxSizing: 'border-box',
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
     },
@@ -190,10 +127,10 @@ const styles: Record<string, React.CSSProperties> = {
         flexDirection: 'column',
         gap: '4px',
         flex: 1,
-        minWidth: '220px',
+        minWidth: '200px',
     },
     label: {
-        fontSize: '25px',
+        fontSize: '14px',
         fontWeight: 600,
         color: '#212934',
     },
@@ -205,68 +142,4 @@ const styles: Record<string, React.CSSProperties> = {
     buttonWrapper: { flexShrink: 0, paddingBottom: '2px' },
     centered:    { display: 'flex', alignItems: 'center', gap: '8px' },
     loadingText: { fontSize: '13px', color: '#555' },
-    resultsCard: {
-        background: '#f9fafb',
-        border: '1px solid #d5dde5',
-        borderRadius: '6px',
-        padding: '16px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '12px',
-    },
-    cardHeader: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '10px',
-    },
-    cardTitle: {
-        fontSize: '20px',
-        fontWeight: 700,
-        color: '#212934',
-    },
-    totalBadge: {
-        fontSize: '16px',
-        fontWeight: 500,
-        color: '#fff',
-        background: '#2c6fad',
-        borderRadius: '12px',
-        padding: '2px 10px',
-    },
-    sectionLabel: {
-        fontSize: '13px',
-        fontWeight: 600,
-        textTransform: 'uppercase',
-        letterSpacing: '0.05em',
-        color: '#6c7882',
-        marginTop: '4px',
-    },
-    tileRow: {
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: '10px',
-    },
-    tile: {
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: '#fff',
-        border: '1px solid #d5dde5',
-        borderRadius: '6px',
-        padding: '12px 20px',
-        minWidth: '90px',
-        boxShadow: '0 1px 2px rgba(0,0,0,0.06)',
-    },
-    tileValue: {
-        fontSize: '26px',
-        fontWeight: 700,
-        color: '#212934',
-        lineHeight: 1,
-    },
-    tileLabel: {
-        fontSize: '13px',
-        color: '#6c7882',
-        marginTop: '4px',
-        textAlign: 'center',
-    },
 };

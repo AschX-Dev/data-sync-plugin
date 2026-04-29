@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2026-04-25T20:30:05.874Z\n"
-"PO-Revision-Date: 2026-04-25T20:30:05.875Z\n"
+"POT-Creation-Date: 2026-04-27T06:24:08.922Z\n"
+"PO-Revision-Date: 2026-04-27T06:24:08.923Z\n"
 
 msgid "Enterprise Unique ID is required"
 msgstr "Enterprise Unique ID is required"
@@ -38,50 +38,12 @@ msgstr "No participants found"
 msgid "No participants were found linked to enterprise ID \"{{id}}\"."
 msgstr "No participants were found linked to enterprise ID \"{{id}}\"."
 
-msgid "Participant Summary"
-msgstr "Participant Summary"
+msgid "Fields updated"
+msgstr "Fields updated"
 
-msgid "Youth (Age 15–35)"
-msgstr "Youth (Age 15–35)"
-
-msgid "Total Members"
-msgstr "Total Members"
-
-msgid "Female Youth"
-msgstr "Female Youth"
-
-msgid "Male Youth"
-msgstr "Male Youth"
-
-msgid "Internally Displaced Persons (IDP)"
-msgstr "Internally Displaced Persons (IDP)"
-
-msgid "IDP Total"
-msgstr "IDP Total"
-
-msgid "IDP Female"
-msgstr "IDP Female"
-
-msgid "IDP Male"
-msgstr "IDP Male"
-
-msgid "Persons with Disabilities (PWD)"
-msgstr "Persons with Disabilities (PWD)"
-
-msgid "PWD Total"
-msgstr "PWD Total"
-
-msgid "PWD Female"
-msgstr "PWD Female"
-
-msgid "PWD Male"
-msgstr "PWD Male"
-
-msgid "Other Vulnerable Groups"
-msgstr "Other Vulnerable Groups"
-
-msgid "Refugees"
-msgstr "Refugees"
-
-msgid "Returnees"
-msgstr "Returnees"
+msgid ""
+"{{n}} youth participant(s) found for enterprise \"{{id}}\" — fields have "
+"been autofilled."
+msgstr ""
+"{{n}} youth participant(s) found for enterprise \"{{id}}\" — fields have "
+"been autofilled."

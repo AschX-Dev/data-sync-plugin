@@ -570,10 +570,6 @@ video {
   justify-content: center;
 }
 
-.border {
-  border-width: 1px;
-}
-
 .bg-white {
   --tw-bg-opacity: 1;
   background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
@@ -581,10 +577,6 @@ video {
 
 .p-4 {
   padding: 1rem;
-}
-
-.uppercase {
-  text-transform: uppercase;
 }
 
 .filter {

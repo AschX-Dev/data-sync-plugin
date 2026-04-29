@@ -89,7 +89,9 @@ function calculateAge(dob: string): number | null {
 }
 
 function isYes(value: string): boolean {
-    return ['true', 'yes', '1'].includes((value ?? '').trim().toLowerCase());
+    const v = (value ?? '').trim().toLowerCase();
+    // Covers: true, yes, 1, y, on — all common DHIS2 boolean/checkbox stored values
+    return v === 'true' || v === 'yes' || v === '1' || v === 'y' || v === 'on';
 }
 
 function getAttr(attrs: Array<{ attribute: string; value: string }>, uid: string): string {
@@ -97,8 +99,9 @@ function getAttr(attrs: Array<{ attribute: string; value: string }>, uid: string
 }
 
 function trySet(fn: ((v: SetFieldValueProps) => void) | undefined, fieldId: string, value: number) {
-    if (typeof fn === 'function') fn({ fieldId, value: String(value) });
+    if (typeof fn === 'function') fn({ fieldId, value: String(value), options: { valid: true, touched: true } });
 }
+
 
 function calculateCounts(
     teis: any[],
@@ -118,14 +121,15 @@ function calculateCounts(
         const isYouth  = age !== null && age >= 15 && age <= 35;
         const isFemale = sex === 'Female';
         const isMale   = sex === 'Male';
-        const idp      = isYes(getAttr(attrs, IDP_ATTR_UID));
-        const pwd      = isYes(getAttr(attrs, PWD_ATTR_UID));
-        const refugee  = isYes(getAttr(attrs, REFUGEE_ATTR_UID));
-        const returnee = isYes(getAttr(attrs, RETURNEE_ATTR_UID));
+        const idpRaw      = getAttr(attrs, IDP_ATTR_UID);
+        const pwdRaw      = getAttr(attrs, PWD_ATTR_UID);
+        const refugeeRaw  = getAttr(attrs, REFUGEE_ATTR_UID);
+        const returneeRaw = getAttr(attrs, RETURNEE_ATTR_UID);
 
-        console.log(
-            `[EnterpriseCount] TEI ${tei.trackedEntity} | sex="${sex}" | age=${age ?? 'N/A'} | youth=${isYouth} | IDP=${idp} | PWD=${pwd} | refugee=${refugee} | returnee=${returnee}`
-        );
+        const idp      = isYes(idpRaw);
+        const pwd      = isYes(pwdRaw);
+        const refugee  = isYes(refugeeRaw);
+        const returnee = isYes(returneeRaw);
 
         // Skip non-youth entirely
         if (!isYouth) continue;
@@ -156,9 +160,10 @@ export function useExternalData({ setFieldValue, orgUnitId: _orgUnitId }: Props)
     const [isLoading, setIsLoading] = useState(false);
     const [error,     setError]     = useState<ErrorType>(null);
 
-    // ── Use a ref so onComplete always reads the current enterprise ID
-    //    without being affected by React's state batching / stale closures ──
-    const enterpriseIdRef = useRef<string>('');
+    // ── Refs keep current values accessible inside stale closures ──
+    const enterpriseIdRef  = useRef<string>('');
+    const setFieldValueRef = useRef(setFieldValue);
+    setFieldValueRef.current = setFieldValue; // update every render
 
     // ── Step 2: fetch individual TEI profiles ─────────────────────
     async function fetchTeis(teiUids: string[]): Promise<any[]> {
@@ -215,7 +220,7 @@ export function useExternalData({ setFieldValue, orgUnitId: _orgUnitId }: Props)
                 console.log(`[EnterpriseCount] ${teiUids.length} unique TEIs`);
 
                 const teis = await fetchTeis(teiUids);
-                setCounts(calculateCounts(teis, setFieldValue));
+                setCounts(calculateCounts(teis, setFieldValueRef.current));
                 setError(null);
             } catch (e) {
                 console.error('[EnterpriseCount] ❌ Processing error:', e);
