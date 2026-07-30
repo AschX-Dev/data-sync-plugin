@@ -8,11 +8,11 @@ msgstr ""
 "POT-Creation-Date: 2026-04-27T06:24:08.922Z\n"
 "PO-Revision-Date: 2026-04-27T06:24:08.923Z\n"
 
-msgid "Enterprise Unique ID is required"
-msgstr "Enterprise Unique ID is required"
+msgid "patient ID is required"
+msgstr "patient ID is required"
 
-msgid "Enterprise ID"
-msgstr "Enterprise ID"
+msgid "patient ID"
+msgstr "patient ID"
 
 msgid "Enter enterprise unique ID"
 msgstr "Enter enterprise unique ID"

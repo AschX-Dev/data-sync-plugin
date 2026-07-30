@@ -7,22 +7,21 @@ import { SetFieldValueProps } from '../../Plugin.types';
 type Props = {
     setFieldValue: (values: SetFieldValueProps) => void;
     orgUnitId?: string;
-    fieldsMetadata?: Record<string, any>;
 };
 
-export function ExternalSourceForm({ setFieldValue, orgUnitId }: Props) {
-    const { search, counts, isLoading, error } = useExternalData({
-        setFieldValue,
-        orgUnitId,
-    });
+export const ExternalSourceForm = ({ setFieldValue, orgUnitId }: Props) => {
+    const { mutate, isLoading } = useExternalData({ setFieldValue, orgUnitId });
+    const [patientId, setPatientId] = useState('');
+    const [error, setError] = useState('');
 
     const [enterpriseId,    setEnterpriseId]    = useState('');
     const [validationError, setValidationError] = useState('');
 
     function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
-        if (!enterpriseId.trim()) {
-            setValidationError(i18n.t('Enterprise Unique ID is required'));
+
+        if (!patientId.trim()) {
+            setError(i18n.t('patient ID is required'));
             return;
         }
         setValidationError('');
@@ -30,7 +29,19 @@ export function ExternalSourceForm({ setFieldValue, orgUnitId }: Props) {
     }
 
     return (
-        <div style={styles.wrapper}>
+        <>
+            <form
+                className={'fieldContainer'}
+                onSubmit={handleSubmit}
+            >
+                <div className={'labelContainer'}>
+                    <label
+                        htmlFor={'patientId'}
+                        className={'label'}
+                    >
+                        {i18n.t('patient ID')}
+                    </label>
+                </div>
 
             {/* ── Search form ── */}
             <form onSubmit={handleSubmit} style={styles.form}>
