@@ -6,3 +6,4 @@ tailwind.css
 build
 .idea
 .env
+.env.local

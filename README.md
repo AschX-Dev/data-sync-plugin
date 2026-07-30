@@ -1,4 +1,4 @@
-# 🏥 Civil Registry Plugin for DHIS2
+# data dync Plugin for DHIS2
 
 A **DHIS2 Form Field Plugin** that enables data entry operators to look up patients by their National/patient ID and automatically pre-fill tracked entity attributes in the Tracker Capture (Capture App) form — reducing manual entry errors and improving data quality.
 
