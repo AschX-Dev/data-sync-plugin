@@ -98,9 +98,9 @@ All hardcoded UIDs live at the top of `src/Components/ExternalSourceForm/useExte
 ### Step 1 — Programme & Stage UIDs
 
 ```ts
-const PROGRAM_UID            = 'YdLl8aLY91v';  // Your Youth programme UID
-const YOUTH_STATUS_STAGE_UID = 'yvHS9FuVRvA';  // Programme stage UID
-const ENTERPRISE_DE          = 'TlsDM3P677Z';  // Enterprise ID data element UID
+const PROGRAM_UID            = '';  // Your Youth programme UID
+const YOUTH_STATUS_STAGE_UID = '';  // Programme stage UID
+const ENTERPRISE_DE          = '';  // Enterprise ID data element UID
 ```
 
 > Find these in **DHIS2 → Maintenance → Programs** and **Program Stages**.
@@ -108,12 +108,12 @@ const ENTERPRISE_DE          = 'TlsDM3P677Z';  // Enterprise ID data element UID
 ### Step 2 — Tracked Entity Attribute UIDs
 
 ```ts
-const SEX_ATTR_UID      = 'UuarYVu1ga2';  // Sex / Gender attribute
-const DOB_ATTR_UID      = 'CoBkeZU3pGi';  // Date of Birth attribute
-const IDP_ATTR_UID      = 'NZ5I8At04Qv';  // IDP (boolean) attribute
-const PWD_ATTR_UID      = 'xOJ8s05UAXV';  // PWD (boolean) attribute
-const REFUGEE_ATTR_UID  = 'GZOhLCUakHR';  // Refugee (boolean) attribute
-const RETURNEE_ATTR_UID = 'LVPx2XDOwrK';  // Returnee (boolean) attribute
+const SEX_ATTR_UID      = '';  // Sex / Gender attribute
+const DOB_ATTR_UID      = '';  // Date of Birth attribute
+const IDP_ATTR_UID      = '';  // IDP (boolean) attribute
+const PWD_ATTR_UID      = '';  // PWD (boolean) attribute
+const REFUGEE_ATTR_UID  = '';  // Refugee (boolean) attribute
+const RETURNEE_ATTR_UID = '';  // Returnee (boolean) attribute
 ```
 
 > Find attribute UIDs in **DHIS2 → Maintenance → Tracked Entity Attributes**.
