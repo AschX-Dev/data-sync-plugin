@@ -1,17 +1,16 @@
-# Data Sync Plugin for DHIS2
+# data dync Plugin for DHIS2
 
-A **DHIS2 Form Field Plugin** for the Tracker Capture (Capture App) that lets data entry operators look up a youth enterprise by its unique ID and automatically pre-fill aggregated demographic participant counts — eliminating manual tallying and reducing data entry errors.
+A **DHIS2 Form Field Plugin** that enables data entry operators to look up patients by their National/patient ID and automatically pre-fill tracked entity attributes in the Tracker Capture (Capture App) form — reducing manual entry errors and improving data quality.
 
 ---
 
 ## ✨ Features
 
-- 🔍 **Enterprise Lookup** — search the DHIS2 tracker by Enterprise Unique ID
-- 📊 **Auto-fill Counts** — automatically populates 11 demographic aggregate fields in the active Capture form
-- 👥 **Youth-scoped** — only counts Tracked Entity Instances aged 15–35 (configurable)
-- 🏷️ **Category Breakdowns** — disaggregates by sex, IDP, PWD, refugee, and returnee status
-- 🔒 **Dev-mode safe** — guards `setFieldValue` calls so the plugin doesn't crash outside DHIS2
-- 🪵 **Debug logging** — all steps prefixed `[EnterpriseCount]` for easy DevTools filtering
+- 🔍 **Patient Lookup** — search for an existing Tracked Entity Instance (TEI) by Patient/National ID
+- ⚡ **Auto-fill** — automatically populates First Name and Last Name into the active Tracker form
+- 🛡️ **Alias-safe** — only fills fields configured as plugin aliases; all other attributes are silently ignored
+- 🪵 **Debug logging** — detailed `[CivilRegistry]` console logs for every step of the lookup and fill flow
+- 🔒 **Dev-mode safe** — guards `setFieldValue` calls so the plugin doesn't crash when run outside DHIS2
 
 ---
 
@@ -19,16 +18,16 @@ A **DHIS2 Form Field Plugin** for the Tracker Capture (Capture App) that lets da
 
 ```
 src/
-├── Plugin.tsx                          # Root plugin component (entry point for DHIS2)
-├── Plugin.types.ts                     # TypeScript interfaces for DHIS2 plugin props
-└── Components/
-    ├── ExternalSourceForm/
-    │   ├── ExternalSourceForm.tsx      # Enterprise ID search UI and result display
-    │   ├── useExternalData.ts          # Core logic: event fetch → TEI lookup → count calculation → field fill
-    │   └── index.ts                    # Barrel export
-    └── PluginDetails/
-        ├── PluginDetails.tsx           # Diagnostic view (fieldsMetadata / values inspector)
-        └── index.ts
+├── Plugin.tsx                          # Root plugin component (receives DHIS2 props)
+├── Plugin.types.ts                     # TypeScript types for DHIS2 plugin props
+├── Components/
+│   ├── ExternalSourceForm/
+│   │   ├── ExternalSourceForm.tsx      # patient ID search UI
+│   │   ├── useExternalData.ts          # TEI fetch + alias mapping + setFieldValue logic
+│   │   └── index.ts
+│   └── PluginDetails/
+│       ├── PluginDetails.tsx           # Diagnostic view: shows raw fieldsMetadata/values
+│       └── index.ts
 ```
 
 ---
@@ -36,23 +35,19 @@ src/
 ## ⚙️ How It Works
 
 ```
-Operator types an Enterprise Unique ID → clicks Search
+User opens Capture App form
         ↓
-Plugin fetches all events in the Youth Status programme stage
+Plugin renders inside the form (DHIS2 Field Plugin)
         ↓
-Events are filtered by the Enterprise ID data element
+Operator types a patient ID → clicks Search
         ↓
-Unique Tracked Entity UIDs are extracted from matched events
+Plugin calls DHIS2 trackedEntityInstances API
         ↓
-Each TEI's full attribute profile is fetched individually
+Attribute UIDs in the response are mapped to plugin aliases
         ↓
-Youth filter applied (age 15–35 from Date of Birth attribute)
+setFieldValue() fills firstName, lastName, patientId in the form
         ↓
-Demographic counts computed (sex, IDP, PWD, refugee, returnee)
-        ↓
-setFieldValue() auto-fills all 11 aggregate fields in the form
-        ↓
-Success notice confirms total youth participants found
+Operator reviews and submits the pre-filled form
 ```
 
 ---
@@ -61,23 +56,20 @@ Success notice confirms total youth participants found
 
 ### Prerequisites
 
-| Requirement | Version |
-|---|---|
-| DHIS2 instance | v40+ |
-| [Tracker Plugin Configurator](https://apps.dhis2.org/app/85d156b7-6e3f-43f0-be57-395449393f7d) | installed |
-| Node.js | ≥ 18 |
-| Yarn | any |
+- DHIS2 instance (v40+)
+- [Tracker Plugin Configurator](https://apps.dhis2.org/app/85d156b7-6e3f-43f0-be57-395449393f7d) installed
+- Node.js ≥ 18 and Yarn
 
 ### Installation
 
 1. Clone the repository:
    ```bash
    git clone <repo-url>
-   cd data-sync-plugin
+   cd civil-registry-plugin
    yarn install
    ```
 
-2. Start the development server (also compiles Tailwind CSS in watch mode):
+2. Start the development server:
    ```bash
    yarn start
    ```
@@ -87,135 +79,94 @@ Success notice confirms total youth participants found
    yarn build
    ```
 
-4. Upload the generated `.zip` from the `build/` directory to your DHIS2 instance via **App Management**.
+4. Upload the built `.zip` from `build/` to your DHIS2 instance via **App Management**.
 
 ---
 
 ## 🔧 Configuration
 
-All hardcoded UIDs live at the top of `src/Components/ExternalSourceForm/useExternalData.ts`. Update these to match your DHIS2 instance before deploying.
+### Step 1 — Map Your DHIS2 Attribute UIDs
 
-### Step 1 — Programme & Stage UIDs
-
-```ts
-const PROGRAM_UID            = 'YdLl8aLY91v';  // Your Youth programme UID
-const YOUTH_STATUS_STAGE_UID = 'yvHS9FuVRvA';  // Programme stage UID
-const ENTERPRISE_DE          = 'TlsDM3P677Z';  // Enterprise ID data element UID
-```
-
-> Find these in **DHIS2 → Maintenance → Programs** and **Program Stages**.
-
-### Step 2 — Tracked Entity Attribute UIDs
+Open `src/Components/ExternalSourceForm/useExternalData.ts` and populate the `ATTRIBUTE_UID_TO_ALIAS` map with your **real DHIS2 attribute UIDs**:
 
 ```ts
-const SEX_ATTR_UID      = 'UuarYVu1ga2';  // Sex / Gender attribute
-const DOB_ATTR_UID      = 'CoBkeZU3pGi';  // Date of Birth attribute
-const IDP_ATTR_UID      = 'NZ5I8At04Qv';  // IDP (boolean) attribute
-const PWD_ATTR_UID      = 'xOJ8s05UAXV';  // PWD (boolean) attribute
-const REFUGEE_ATTR_UID  = 'GZOhLCUakHR';  // Refugee (boolean) attribute
-const RETURNEE_ATTR_UID = 'LVPx2XDOwrK';  // Returnee (boolean) attribute
+const ATTRIBUTE_UID_TO_ALIAS: Record<string, 'patientId' | 'firstName' | 'lastName'> = {
+    'MWaTKqE7ZvR': 'patientId',   // National ID attribute UID
+    'KXDOx8W4Wzwi': 'firstName',  // First Name attribute UID
+    'Y8ku500FYhK':  'lastName',   // Last Name attribute UID
+};
 ```
 
-> Find attribute UIDs in **DHIS2 → Maintenance → Tracked Entity Attributes**.
+> Find your attribute UIDs in **DHIS2 → Maintenance → Tracked Entity Attributes**.
 
-### Step 3 — Configure Plugin Aliases in Tracker Plugin Configurator
-
-Map your Tracked Entity Attributes to the following **exact** plugin aliases in the Tracker Plugin Configurator app. These must match the keys in `FIELD_MAP`:
-
-| Plugin Alias | Description |
-|---|---|
-| `totalgroupmembers` | Total youth participants (15–35) |
-| `femaleyouth` | Female youth count |
-| `maleyouth` | Male youth count |
-| `idp` | Total IDPs (youth only) |
-| `idpfemale` | Female IDPs |
-| `idpmale` | Male IDPs |
-| `pwd` | Total PWDs (youth only) |
-| `pwdfemale` | Female PWDs |
-| `pwdmale` | Male PWDs |
-| `refugee` | Total refugees (youth only) |
-| `returnee` | Total returnees (youth only) |
-
-> ⚠️ All 11 aliases must match exactly. The plugin calls `setFieldValue` for each one; mismatched alias names will throw `"fieldId must be one of the configured plugin ids"`.
-
-### Step 4 — Youth Age Range (Optional)
-
-The youth filter is defined inline in `calculateCounts` in `useExternalData.ts`:
+Also update the API filter UID in the `fetchTEI` function to use your National ID attribute UID:
 
 ```ts
-const isYouth = age !== null && age >= 15 && age <= 35;
+const url = `/api/trackedEntityInstances.json?filter=<YOUR_NATIONAL_ID_UID>:EQ:${patientId}...`;
 ```
 
-Adjust the bounds to match your programme's definition of "youth".
+### Step 2 — Configure Aliases in Tracker Plugin Configurator
 
----
+In the Tracker Plugin Configurator app, map your tracked entity attributes to the following **exact** plugin aliases:
 
-## 📋 Computed Fields Reference
+| Tracked Entity Attribute | Plugin Alias  | Type |
+|--------------------------|---------------|------|
+| Patient / National ID    | `patientId`   | Text |
+| First Name               | `firstName`   | Text |
+| Last Name                | `lastName`    | Text |
 
-| Field Alias | Computation Logic |
-|---|---|
-| `totalgroupmembers` | All TEIs where `isYouth === true` |
-| `femaleyouth` | Youth where `sex === 'Female'` |
-| `maleyouth` | Youth where `sex === 'Male'` |
-| `idp` | Youth where IDP attribute is truthy |
-| `idpfemale` | `idp && isFemale` |
-| `idpmale` | `idp && isMale` |
-| `pwd` | Youth where PWD attribute is truthy |
-| `pwdfemale` | `pwd && isFemale` |
-| `pwdmale` | `pwd && isMale` |
-| `refugee` | Youth where refugee attribute is truthy |
-| `returnee` | Youth where returnee attribute is truthy |
+> ⚠️ **Only these three aliases are allowed.** The plugin will ignore all other attributes (gender, date of birth, etc.) even if they exist on the TEI.
 
-**Boolean attribute matching** — the following stored values are all treated as `true`:
-`true`, `yes`, `1`, `y`, `on` (case-insensitive).
+### Step 3 — Optional: Filter by Program
 
----
+If your TEIs must be scoped to a specific program, add the program UID to the API URL:
 
-## 🏗️ DHIS2 Plugin Props
-
-The plugin receives the following props from the DHIS2 Capture App at runtime:
-
-| Prop | Type | Description |
-|---|---|---|
-| `setFieldValue` | `({ fieldId, value, options? }) => void` | Fills a form field by its plugin alias |
-| `fieldsMetadata` | `Record<string, FieldMeta>` | Metadata for all configured plugin fields |
-| `values` | `Record<string, any>` | Current form field values |
-| `errors` | `Record<string, string[]>` | Current field validation errors |
-| `warnings` | `Record<string, string[]>` | Current field validation warnings |
-| `formSubmitted` | `boolean` | Whether the form has been submitted |
-| `setContextFieldValue` | `({ fieldId, value }) => void` | Sets context fields: `geometry`, `occurredAt`, `enrolledAt` |
-| `programId` | `string?` | Active programme UID (injected by Capture) |
-| `orgUnitId` | `string?` | Active organisation unit UID (injected by Capture) |
+```ts
+const url = `/api/trackedEntityInstances.json?program=<PROGRAM_UID>&filter=...`;
+```
 
 ---
 
 ## 🪵 Debugging
 
-All plugin logs are prefixed `[EnterpriseCount]`. Open browser DevTools and filter by this prefix to trace execution:
+All plugin logs are prefixed with `[CivilRegistry]`. Open your browser DevTools console and filter by this prefix to trace:
 
-| Log Message | Meaning |
-|---|---|
-| `▶ Search — enterprise="..."` | Search initiated |
-| `◀ Step 1 — N events \| filtering for "..."` | Events fetched; filtering started |
-| `N events matched` | Events linked to the given enterprise ID |
-| `N unique TEIs` | Deduplicated tracked entity UIDs |
-| `▶ Step 2 — fetching N TEIs` | Individual profile fetch started |
-| `◀ Step 2 complete — N/M loaded` | How many TEI profiles were resolved |
-| `✅ Final counts: {...}` | Full breakdown of computed counts |
-| `❌ Failed TEI <uid>` | A single TEI fetch failed (non-fatal) |
-| `❌ Events fetch failed` | The initial events query failed |
+| Log | Meaning |
+|-----|---------|
+| `Fetching TEI for patientId: ...` | API call initiated |
+| `Raw DHIS2 TEI response: ...` | Full raw API response |
+| `TEIs found: N` | How many records matched |
+| `UID="..." → alias="..."` | Mapping result for each attribute |
+| `Skipping alias "..." — not in allowed list` | Attribute was mapped but not allowed (e.g. gender) |
+| `✅ setFieldValue({ fieldId: "...", value: "..." })` | Field successfully filled |
+| `setFieldValue is not a function` | Running outside DHIS2 (dev/standalone mode) |
+
+---
+
+## 🏗️ DHIS2 Plugin Props
+
+The plugin receives the following props from the DHIS2 Capture App:
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `setFieldValue` | `(fieldId, value) => void` | Fills a form field by its plugin alias |
+| `fieldsMetadata` | `Record<string, FieldMeta>` | Metadata for all configured fields |
+| `values` | `Record<string, any>` | Current form field values |
+| `errors` | `Record<string, string[]>` | Current field validation errors |
+| `warnings` | `Record<string, string[]>` | Current field validation warnings |
+| `formSubmitted` | `boolean` | Whether the form has been submitted |
+| `setContextFieldValue` | `(fieldId, value) => void` | Sets context fields: `geometry`, `occurredAt`, `enrolledAt` |
 
 ---
 
 ## ⚠️ Important Notes
 
-- **Page size** — the events query fetches up to `2000` events per call (`ouMode: ALL`). For very large programmes, consider implementing pagination via the `page` query parameter.
-- **`setFieldValue` alias constraints** — only alias names configured in Tracker Plugin Configurator are accepted. Passing a raw UID will throw an error.
-- **Dual entry point** — `d2.config.js` registers the plugin under both `app` and `plugin` entry points so the module works both as a standalone dev app and as an embedded Capture plugin.
-- **Tailwind CSS** — the project uses Tailwind v3 compiled to `src/tailwind.css`. The `yarn start` command runs the Tailwind watcher alongside the DHIS2 dev server automatically.
+- `setFieldValue` only accepts `fieldId` values that match aliases **configured in Tracker Plugin Configurator**. Passing a raw UID (e.g. `KXDOx8W4Wzwi`) will throw: `"fieldId must be one of the configured plugin ids"`.
+- If you add or remove aliases in the Configurator, update `ATTRIBUTE_UID_TO_ALIAS` and `ALLOWED_ALIASES` accordingly.
+- For production use, consider routing the DHIS2 API call through a proxy server rather than calling it directly from the browser.
 
 ---
 
 ## 📄 License
 
-BSD-3-Clause © Data Sync Plugin Contributors
+BSD-3-Clause © Civil Registry Plugin Contributors

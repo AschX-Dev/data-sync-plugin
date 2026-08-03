@@ -1,135 +1,259 @@
-import { useDataQuery } from "@dhis2/app-runtime";
-import { SetFieldValueProps } from "../../Plugin.types";
+import { useState, useRef } from 'react';
+import { useDataQuery, useDataEngine } from '@dhis2/app-runtime';
+import { SetFieldValueProps } from '../../Plugin.types';
 
-type Props = {
-    setFieldValue: (values: SetFieldValueProps) => void;
-    orgUnitId?: string;
-}
+// ─────────────────────────────────────────────────────────────────
+// Types
+// ─────────────────────────────────────────────────────────────────
 
-// ──────────────────────────────────────────────
-// Configuration — update these if UIDs change
-// ──────────────────────────────────────────────
-
-/** Program UID for the civil registry / patient programme */
-const PROGRAM_UID = 'zmgIkpgIW1I';
-
-/** National ID attribute UID — used as the search filter */
-const PATIENT_ID_ATTR_UID = 'MWaTKqE7ZvR';
-
-/**
- * Maps TEI attribute UIDs → plugin field aliases.
- * Aliases MUST match what is configured in Tracker Plugin Configurator.
- */
-const ATTRIBUTE_UID_TO_ALIAS: Record<string, 'patientId' | 'firstName' | 'lastName'> = {
-    'MWaTKqE7ZvR': 'patientId',
-    'KXDOx8W4Wzw': 'firstName',
-    'Y8ku500FYhK': 'lastName',
+export type CountResults = {
+    totalgroupmembers: number;
+    femaleyouth:       number;
+    maleyouth:         number;
+    idp:               number;
+    idpfemale:         number;
+    idpmale:           number;
+    pwd:               number;
+    pwdfemale:         number;
+    pwdmale:           number;
+    refugee:           number;
+    returnee:          number;
 };
 
-/** Only these aliases may be passed to setFieldValue */
-const ALLOWED_ALIASES = new Set<string>(['patientId', 'firstName', 'lastName']);
+export type ErrorType = 'notFoundError' | 'fetchError' | null;
 
-// ──────────────────────────────────────────────
-// Query
-// ──────────────────────────────────────────────
+type Props = {
+    setFieldValue?: (values: SetFieldValueProps) => void;
+    orgUnitId?: string;
+};
 
-const TEI_QUERY = {
-    tei: {
-        resource: 'tracker/trackedEntities',
-        params: ({
-            patientId,
-            orgUnitId,
-        }: {
-            patientId: string;
-            orgUnitId?: string;
-        }) => {
-            const params: Record<string, string | number> = {
-                program: PROGRAM_UID,
-                filter: `${PATIENT_ID_ATTR_UID}:EQ:${patientId}`,
-                fields: 'trackedEntity,attributes[attribute,value]',
-                pageSize: 1,
-                ouMode: 'ALL',
-            };
+// ─────────────────────────────────────────────────────────────────
+// Configuration
+// ─────────────────────────────────────────────────────────────────
 
-            if (orgUnitId) {
-                params.orgUnit = orgUnitId;
-            }
+const PROGRAM_UID            = 'YdLl8aLY91v';
+const YOUTH_STATUS_STAGE_UID = 'yvHS9FuVRvA';
+const ENTERPRISE_DE          = 'TlsDM3P677Z';
 
-            console.debug('[CivilRegistry] Final query params:', params);
-            return params;
-        },
+const SEX_ATTR_UID      = 'UuarYVu1ga2';
+const DOB_ATTR_UID      = 'CoBkeZU3pGi';
+const IDP_ATTR_UID      = 'NZ5I8At04Qv';
+const PWD_ATTR_UID      = 'xOJ8s05UAXV';
+const REFUGEE_ATTR_UID  = 'GZOhLCUakHR';
+const RETURNEE_ATTR_UID = 'LVPx2XDOwrK';
+
+const FIELD_MAP: Record<keyof CountResults, string> = {
+    totalgroupmembers: 'totalgroupmembers',
+    femaleyouth:       'femaleyouth',
+    maleyouth:         'maleyouth',
+    idp:               'idp',
+    idpfemale:         'idpfemale',
+    idpmale:           'idpmale',
+    pwd:               'pwd',
+    pwdfemale:         'pwdfemale',
+    pwdmale:           'pwdmale',
+    refugee:           'refugee',
+    returnee:          'returnee',
+};
+
+// ─────────────────────────────────────────────────────────────────
+// Events query
+// ─────────────────────────────────────────────────────────────────
+
+const EVENTS_QUERY = {
+    events: {
+        resource: 'tracker/events',
+        params: () => ({
+            program:      PROGRAM_UID,
+            programStage: YOUTH_STATUS_STAGE_UID,
+            fields:       'trackedEntity,dataValues[dataElement,value]',
+            ouMode:       'ALL',
+            pageSize:     2000,
+        }),
     },
 };
 
-// ──────────────────────────────────────────────
-// Auto-fill handler
-// ──────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────────────────────────────
 
-const handleFill = (
-    data: any,
-    setFieldValue: (values: SetFieldValueProps) => void
-) => {
-    // Direct API returns `trackedEntities`, not `instances`
-    const instances = data?.tei?.trackedEntities ?? [];
-    console.debug('[CivilRegistry] Raw response:', JSON.stringify(data?.tei, null, 2));
-    console.debug(`[CivilRegistry] TEIs found: ${instances.length}`);
+function calculateAge(dob: string): number | null {
+    if (!dob?.trim()) return null;
+    const birth = new Date(dob.trim());
+    if (isNaN(birth.getTime())) return null;
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age -= 1;
+    return age;
+}
 
-    if (instances.length === 0) {
-        console.warn('[CivilRegistry] No TEI found for the given patientId.');
-        return;
-    }
+function isYes(value: string): boolean {
+    const v = (value ?? '').trim().toLowerCase();
+    // Covers: true, yes, 1, y, on — all common DHIS2 boolean/checkbox stored values
+    return v === 'true' || v === 'yes' || v === '1' || v === 'y' || v === 'on';
+}
 
-    const fetchedAttrs: Array<{ attribute: string; value: string }> =
-        instances[0].attributes ?? [];
+function getAttr(attrs: Array<{ attribute: string; value: string }>, uid: string): string {
+    return attrs.find(a => a.attribute === uid)?.value ?? '';
+}
 
-    console.debug('[CivilRegistry] Fetched attributes:', fetchedAttrs);
+function trySet(fn: ((v: SetFieldValueProps) => void) | undefined, fieldId: string, value: number) {
+    if (typeof fn === 'function') fn({ fieldId, value: String(value), options: { valid: true, touched: true } });
+}
 
-    fetchedAttrs.forEach(({ attribute, value }) => {
-        const alias = ATTRIBUTE_UID_TO_ALIAS[attribute];
-        console.debug(
-            `[CivilRegistry] UID="${attribute}" → alias="${alias ?? '(not mapped)'}" value="${value}"`
-        );
 
-        if (!alias) return;
-
-        if (!ALLOWED_ALIASES.has(alias)) {
-            console.debug(`[CivilRegistry] Skipping "${alias}" — not in allowed list`);
-            return;
-        }
-
-        if (typeof setFieldValue !== 'function') {
-            console.warn('[CivilRegistry] setFieldValue is not a function — skipping (dev mode?)');
-            return;
-        }
-
-        console.debug(`[CivilRegistry] ✅ setFieldValue({ fieldId: "${alias}", value: "${value}" })`);
-        setFieldValue({ fieldId: alias, value });
-    });
-};
-
-// ──────────────────────────────────────────────
-// Hook
-// ──────────────────────────────────────────────
-
-export const useExternalData = ({ setFieldValue, orgUnitId }: Props) => {
-    const { loading: isLoading, error: fetchError, refetch } = useDataQuery(
-        TEI_QUERY,
-        {
-            lazy: true,
-            onComplete: (data) => handleFill(data, setFieldValue),
-            onError: (error) => console.error('[CivilRegistry] Failed to fetch TEI:', error),
-        }
-    );
-
-    const mutate = ({ patientId }: { patientId: string }) => {
-        if (!patientId.trim()) {
-            console.warn('[CivilRegistry] patientId is empty — skipping fetch');
-            return;
-        }
-
-        console.debug('[CivilRegistry] Initiating fetch:', { patientId, program: PROGRAM_UID, orgUnitId });
-        refetch({ patientId, orgUnitId });
+function calculateCounts(
+    teis: any[],
+    setFieldValue?: (v: SetFieldValueProps) => void
+): CountResults {
+    const c: CountResults = {
+        totalgroupmembers: 0, femaleyouth: 0, maleyouth: 0,
+        idp: 0, idpfemale: 0, idpmale: 0,
+        pwd: 0, pwdfemale: 0, pwdmale: 0,
+        refugee: 0, returnee: 0,
     };
 
-    return { mutate, isLoading, isError: !!fetchError };
-};
+    for (const tei of teis) {
+        const attrs    = tei.attributes ?? [];
+        const sex      = getAttr(attrs, SEX_ATTR_UID);
+        const age      = calculateAge(getAttr(attrs, DOB_ATTR_UID));
+        const isYouth  = age !== null && age >= 15 && age <= 35;
+        const isFemale = sex === 'Female';
+        const isMale   = sex === 'Male';
+        const idpRaw      = getAttr(attrs, IDP_ATTR_UID);
+        const pwdRaw      = getAttr(attrs, PWD_ATTR_UID);
+        const refugeeRaw  = getAttr(attrs, REFUGEE_ATTR_UID);
+        const returneeRaw = getAttr(attrs, RETURNEE_ATTR_UID);
+
+        const idp      = isYes(idpRaw);
+        const pwd      = isYes(pwdRaw);
+        const refugee  = isYes(refugeeRaw);
+        const returnee = isYes(returneeRaw);
+
+        // Skip non-youth entirely
+        if (!isYouth) continue;
+
+        c.totalgroupmembers += 1;
+        if (isFemale) c.femaleyouth += 1;
+        if (isMale)   c.maleyouth   += 1;
+
+        if (idp) { c.idp += 1; if (isFemale) c.idpfemale += 1; if (isMale) c.idpmale += 1; }
+        if (pwd) { c.pwd += 1; if (isFemale) c.pwdfemale += 1; if (isMale) c.pwdmale += 1; }
+        if (refugee)  c.refugee  += 1;
+        if (returnee) c.returnee += 1;
+    }
+
+    console.log('[EnterpriseCount] ✅ Final counts:', c);
+    (Object.keys(c) as Array<keyof CountResults>).forEach(k => trySet(setFieldValue, FIELD_MAP[k], c[k]));
+    return c;
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Hook
+// ─────────────────────────────────────────────────────────────────
+
+export function useExternalData({ setFieldValue, orgUnitId: _orgUnitId }: Props) {
+    const engine = useDataEngine();
+
+    const [counts,    setCounts]    = useState<CountResults | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error,     setError]     = useState<ErrorType>(null);
+
+    // ── Refs keep current values accessible inside stale closures ──
+    const enterpriseIdRef  = useRef<string>('');
+    const setFieldValueRef = useRef(setFieldValue);
+    setFieldValueRef.current = setFieldValue; // update every render
+
+    // ── Step 2: fetch individual TEI profiles ─────────────────────
+    async function fetchTeis(teiUids: string[]): Promise<any[]> {
+        console.log(`[EnterpriseCount] ▶ Step 2 — fetching ${teiUids.length} TEIs`);
+        const results = await Promise.all(
+            teiUids.map(async (uid) => {
+                try {
+                    const res: any = await engine.query({
+                        tei: {
+                            resource: `tracker/trackedEntities/${uid}`,
+                            params: { fields: 'trackedEntity,attributes[attribute,value]', ouMode: 'ALL' },
+                        },
+                    });
+                    return res?.tei ?? null;
+                } catch (e) {
+                    console.error(`[EnterpriseCount] ❌ Failed TEI ${uid}:`, e);
+                    return null;
+                }
+            })
+        );
+        const valid = results.filter(Boolean);
+        console.log(`[EnterpriseCount] ◀ Step 2 complete — ${valid.length}/${teiUids.length} loaded`);
+        return valid;
+    }
+
+    // ── Step 1: fetch events, filter by enterprise ID from ref ────
+    const { refetch: fetchEvents } = useDataQuery(EVENTS_QUERY, {
+        lazy: true,
+
+        onComplete: async (data: any) => {
+            try {
+                const events: any[] = data?.events?.instances ?? data?.events?.events ?? [];
+                const currentId = enterpriseIdRef.current;
+
+                console.log(`[EnterpriseCount] ◀ Step 1 — ${events.length} events | filtering for "${currentId}"`);
+
+                const matched = events.filter((ev: any) => {
+                    const dv = ev.dataValues?.find((d: any) => d.dataElement === ENTERPRISE_DE);
+                    return dv?.value?.toString().trim() === currentId;
+                });
+
+                console.log(`[EnterpriseCount] ${matched.length} events matched`);
+
+                if (matched.length === 0) {
+                    setCounts(null);
+                    setError('notFoundError');
+                    setIsLoading(false);
+                    return;
+                }
+
+                const teiUids = Array.from(
+                    new Set<string>(matched.map((ev: any) => ev.trackedEntity).filter(Boolean))
+                );
+                console.log(`[EnterpriseCount] ${teiUids.length} unique TEIs`);
+
+                const teis = await fetchTeis(teiUids);
+                setCounts(calculateCounts(teis, setFieldValueRef.current));
+                setError(null);
+            } catch (e) {
+                console.error('[EnterpriseCount] ❌ Processing error:', e);
+                setError('fetchError');
+                setCounts(null);
+            } finally {
+                setIsLoading(false);
+            }
+        },
+
+        onError: (e: any) => {
+            console.error('[EnterpriseCount] ❌ Events fetch failed:', e);
+            setCounts(null);
+            setError('fetchError');
+            setIsLoading(false);
+        },
+    });
+
+    // ── Public search ─────────────────────────────────────────────
+    function search({ enterpriseIdValue }: { enterpriseIdValue: string }) {
+        const id = enterpriseIdValue.trim();
+        if (!id) return;
+
+        console.log(`[EnterpriseCount] ▶ Search — enterprise="${id}"`);
+
+        // Write to ref BEFORE fetchEvents so onComplete sees the current value
+        enterpriseIdRef.current = id;
+
+        setCounts(null);
+        setError(null);
+        setIsLoading(true);
+        fetchEvents({});
+    }
+
+    return { search, counts, isLoading, error };
+}
